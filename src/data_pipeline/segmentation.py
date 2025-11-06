@@ -1,6 +1,6 @@
 import numpy as np
 
-def segment_pair(
+def segment_pair_primary(
     log_mel: np.ndarray,
     piano_roll: np.ndarray,
     sr: float,
@@ -10,6 +10,10 @@ def segment_pair(
 ) -> tuple[np.ndarray, np.ndarray]:
     """
     Segment a log-Mel spectrogram and piano roll pair into equal time chunks.
+
+    This function is used to segment data for the primary model. Each segment
+    of the log-Mel spectrogram corresponds directly to a segment of the piano
+    roll of the same length, preserving a 1:1 alignment between input and label.
 
     Parameters
     ----------
