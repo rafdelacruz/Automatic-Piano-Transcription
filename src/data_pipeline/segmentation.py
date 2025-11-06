@@ -129,7 +129,7 @@ def segment_pair_baseline(
         start = centre - half
         end = start + context_size
 
-        log_mel_segments.append(log_mel[:, start:end])
-        piano_roll_segments.append(piano_roll[:, centre])
+        log_mel_segments.append(log_mel[:, start:end].T) # Tranpose to (n_frames, n_mels)
+        piano_roll_segments.append(piano_roll[21:109, centre]) # Only take piano notes
 
     return np.stack(log_mel_segments), np.stack(piano_roll_segments)
