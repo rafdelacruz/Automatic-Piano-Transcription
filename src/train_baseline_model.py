@@ -10,6 +10,8 @@ import torch.nn as nn
 import torch.optim as optim
 from torch.utils.data import DataLoader
 
+import config
+from data_pipeline.dataset import PianoTranscriptionDataset
 from models.baseline import AllConv
 
 def train(model, train_data, val_data=None, batch_size=16, num_epochs=10, save_path=None, save_checkpoint=True):
@@ -25,7 +27,7 @@ def train(model, train_data, val_data=None, batch_size=16, num_epochs=10, save_p
     val_loader = DataLoader(val_data, batch_size=batch_size)
 
     criterion = nn.BCEWithLogitsLoss()
-    optimizer = optim.SGD(model.parameters(), lr=1.0, momentum=0.9)
+    optimizer = optim.SGD(model.parameters(), lr=0.5, momentum=0.9)
 
     # Halve learning rate every 10 epochs
     scheduler = optim.lr_scheduler.StepLR(optimizer, step_size=10, gamma=0.5)
@@ -82,3 +84,7 @@ def train(model, train_data, val_data=None, batch_size=16, num_epochs=10, save_p
 if __name__ == '__main__':
     model = AllConv()
     
+    train_dataset = PianoTranscriptionDataset(config.BASELINE_TRAIN_DIR, 'train')
+    val_dataset = PianoTranscriptionDataset(config.BASELINE_VAL_DIR, 'val')
+
+    train(model, train_dataset, val_data=train_dataset, num_epochs=20, save_path=pathlib.Path('.'), save_checkpoint=True)
