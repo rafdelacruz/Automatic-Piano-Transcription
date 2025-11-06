@@ -7,7 +7,7 @@ import pandas as pd
 import config
 from data_pipeline.audio_utils import load_audio, compute_log_mel_spectrogram
 from data_pipeline.midi_utils import load_midi, convert_midi_to_piano_roll
-from data_pipeline.segmentation import segment_pair
+from data_pipeline.segmentation import segment_pair_primary, segment_pair_baseline
 
 def process_pair(
     wav_path: pathlib.Path, midi_path: pathlib.Path,
@@ -61,7 +61,7 @@ def process_pair(
 
     return log_mel, piano_roll
 
-def process_dataset(dataset: str, split_file: str) -> None:
+def process_dataset(dataset: str, split_file: str, primary: bool = True) -> None:
     """
     Process the specified dataset and save the processed data to appropriate
     directories for training, validation, or testing.
@@ -83,6 +83,8 @@ def process_dataset(dataset: str, split_file: str) -> None:
         A string holding the name of the dataset.
     split_file : str
         A string holding the .csv file containing the dataset split.
+    primary : bool, default=True
+        Indicates whether data is being processed for the primary model.
     """
     dataset_dir = config.DATA_RAW_DIR / dataset
     metadata_df = pd.read_csv(dataset_dir / split_file)
@@ -92,7 +94,11 @@ def process_dataset(dataset: str, split_file: str) -> None:
     val_segments = [[], []]
     test_segments = [[], []]
 
-    for dir in [config.TRAIN_DIR, config.VAL_DIR, config.TEST_DIR]:
+    train_dir = config.PRIMARY_TRAIN_DIR if primary else config.BASELINE_TRAIN_DIR
+    val_dir = config.PRIMARY_VAL_DIR if primary else config.BASELINE_VAL_DIR
+    test_dir = config.PRIMARY_TEST_DIR if primary else config.BASELINE_TEST_DIR
+
+    for dir in [train_dir, val_dir, test_dir]:
         dir.mkdir(parents=True, exist_ok=True)
 
     for i in range(len(metadata_df)):
@@ -110,12 +116,17 @@ def process_dataset(dataset: str, split_file: str) -> None:
         )
 
         # Segment spectrogram and piano roll
-        log_mel_segments, piano_roll_segments = segment_pair(
-            log_mel, piano_roll,
-            config.TARGET_SR,
-            hop_length=config.HOP_LENGTH,
-            segment_duration=config.SEGMENT_DURATION
-        )
+        if primary:
+            log_mel_segments, piano_roll_segments = segment_pair_primary(
+                log_mel, piano_roll,
+                config.TARGET_SR,
+                hop_length=config.HOP_LENGTH,
+                segment_duration=config.SEGMENT_DURATION
+            )
+        else:
+            log_mel_segments, piano_roll_segments = segment_pair_baseline(
+                log_mel, piano_roll
+            )
 
         if split == 'train':
             train_segments[0].extend(log_mel_segments)
@@ -132,15 +143,15 @@ def process_dataset(dataset: str, split_file: str) -> None:
         if i % 10 == 0:
             print(f'{i + 1}/{len(metadata_df)} samples processed!')
 
-
     # Save the data pairs to their respective folder
-    np.save(config.TRAIN_DIR / 'train_log_mel_segments.npy', np.stack(train_segments[0]))
-    np.save(config.TRAIN_DIR / 'train_piano_roll_segments.npy', np.stack(train_segments[1]))
-    np.save(config.VAL_DIR / 'val_log_mel_segments.npy', np.stack(val_segments[0]))
-    np.save(config.VAL_DIR / 'val_piano_roll_segments.npy', np.stack(val_segments[1]))
-    np.save(config.TEST_DIR / 'test_log_mel_segments.npy', np.stack(test_segments[0]))
-    np.save(config.TEST_DIR / 'test_piano_roll_segments.npy', np.stack(test_segments[1]))
+    np.save(train_dir / 'train_log_mel_segments.npy', np.stack(train_segments[0]))
+    np.save(train_dir / 'train_piano_roll_segments.npy', np.stack(train_segments[1]))
+    np.save(val_dir / 'val_log_mel_segments.npy', np.stack(val_segments[0]))
+    np.save(val_dir / 'val_piano_roll_segments.npy', np.stack(val_segments[1]))
+    np.save(test_dir / 'test_log_mel_segments.npy', np.stack(test_segments[0]))
+    np.save(test_dir / 'test_piano_roll_segments.npy', np.stack(test_segments[1]))
 
+    print('Segments saved!')
 
 if __name__ == '__main__':
-    process_dataset('maestro-v3.0.0', 'maestro-v3.0.0.csv')
+    process_dataset('maestro-v3.0.0', 'maestro-v3.0.0.csv', primary=False)
