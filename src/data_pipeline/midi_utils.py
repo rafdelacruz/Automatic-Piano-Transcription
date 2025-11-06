@@ -26,6 +26,9 @@ def convert_midi_to_piano_roll(
     """
     Convert a PrettyMIDI object to a piano-roll representation.
 
+    MIDI data contains 128 pitches, but pianos use only 88. This function trims
+    the piano roll to remove the extra pitches that are irrelevant for piano.
+
     Parameters
     ----------
     midi : pretty_midi.PrettyMIDI
@@ -38,22 +41,26 @@ def convert_midi_to_piano_roll(
     Returns
     -------
     np.ndarray
-        A 2D NumPy array of shape (128, n_frames) representing the piano roll,
-        where rows correspond to MIDI pitches (0-127) and columns correspond
-        to time frames.
+        A 2D NumPy array of shape (88, n_frames) representing the piano roll,
+        where rows correspond to piano MIDI pitches (21-108) and columns
+        correspond to time frames.
     """
-    piano_roll = np.zeros((128, n_frames), dtype=np.float32)
+    piano_roll = np.zeros((88, n_frames), dtype=np.float32)
+    piano_min = 21
+    piano_max = 108
 
     for instrument in midi.instruments:
         if not instrument.is_drum:
             for note in instrument.notes:
+                # Ignore note if outside piano range
+                if note.pitch < piano_min or note.pitch > piano_max:
+                    continue
+
                 start_frame = int(np.round(note.start / frame_duration))
-                end_frame = int(np.round(note.end / frame_duration))
+                end_frame = min(int(np.round(note.end / frame_duration)), n_frames)
 
-                if end_frame > n_frames:
-                    end_frame = n_frames
-
-                piano_roll[note.pitch, start_frame:end_frame] = 1.0
+                # Shift pitch range from [21, 108] to [0, 87]
+                piano_roll[note.pitch - piano_min, start_frame:end_frame] = 1.0
 
     return piano_roll
 
@@ -70,7 +77,7 @@ def convert_piano_roll_to_midi(
     Parameters
     ----------
     piano_roll : np.ndarray
-        A 2D NumPy array of shape (128, n_frames) representing the piano roll.
+        A 2D NumPy array of shape (88, n_frames) representing the piano roll.
     sr : float
         The sampling rate of the original audio (in Hz).
     hop_length : int, default=512
@@ -88,12 +95,13 @@ def convert_piano_roll_to_midi(
     """
     pm = pretty_midi.PrettyMIDI()
     instrument = pretty_midi.Instrument(program)
-
     frame_duration = hop_length / sr
-    num_frames = piano_roll.shape[1]
 
-    for pitch in range(128):
-        roll = piano_roll[pitch, :]
+    piano_min = 21
+    piano_max = 108
+
+    for pitch in range(piano_min, piano_max + 1):
+        roll = piano_roll[pitch - piano_min, :]
         roll = (roll > 0.5).astype(np.int8)
 
         padded = np.pad(roll, (1, 1))
