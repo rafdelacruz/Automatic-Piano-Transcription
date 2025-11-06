@@ -76,3 +76,60 @@ def segment_pair_primary(
         piano_roll_segments.append(piano_roll_tail)
 
     return np.stack(log_mel_segments), np.stack(piano_roll_segments)
+
+def segment_pair_baseline(
+    log_mel: np.ndarray,
+    piano_roll: np.ndarray,
+    context_size: int = 5,
+    stride: int = 1,
+    zero_pad: bool = True
+) -> tuple[np.ndarray, np.ndarray]:
+    """
+    Segment a log-Mel spectrogram and piano roll pair into equal time chunks.
+    
+    This function is used to segment data for the baseline model. The log-Mel
+    spectrogram is divided into overlapping windows of the specified context
+    size, and the corresponding label for each segment is the centre frame of
+    the piano roll within that window.
+
+    Parameters
+    ----------
+    log_mel : np.ndarray
+        A 2D NumPy array of shape (n_mels, n_frames) containing the log-Mel
+        spectrogram (in decibels).
+    piano_roll : np.ndarray
+        A 2D NumPy array of shape (128, n_frames) representing the piano roll.
+    context_size : int, default=5
+        The number of consecutive frames in each input segment.
+    stride : int, default=1
+        Step size between consecutive windows.
+    zero_pad : bool, default=True
+        Indicates whether or not to pad the start and end of the spectrogram
+        and piano roll with zeros (so every frame can serve as a centre frame).
+
+    Returns
+    -------
+    tuple[np.ndarray, np.ndarray]
+        A tuple containing:
+        - np.ndarray
+            An array of all log-Mel spectrogram segments.
+        - np.ndarray
+            An array of all piano roll segments.
+    """
+    log_mel_segments = []
+    piano_roll_segments = []
+    half = context_size // 2
+
+    if zero_pad:
+        log_mel = np.pad(log_mel, ((0, 0), (half, half)))
+        piano_roll = np.pad(piano_roll, ((0, 0), (half, half)))
+
+    # Iterate over centres of each segment
+    for centre in range(half, log_mel.shape[1] - half, stride):
+        start = centre - half
+        end = start + context_size
+
+        log_mel_segments.append(log_mel[:, start:end])
+        piano_roll_segments.append(piano_roll[:, centre])
+
+    return np.stack(log_mel_segments), np.stack(piano_roll_segments)
