@@ -11,9 +11,13 @@ DATA_RAW_DIR = DATA_DIR / 'raw'
 DATA_SAMPLE_DIR = DATA_DIR / 'sample'
 DATA_PROCESSED_DIR = DATA_DIR / 'processed'
 
-TRAIN_DIR = DATA_PROCESSED_DIR / 'train'
-VAL_DIR = DATA_PROCESSED_DIR / 'val'
-TEST_DIR = DATA_PROCESSED_DIR / 'test'
+PRIMARY_TRAIN_DIR = DATA_PROCESSED_DIR / 'primary' / 'train'
+PRIMARY_VAL_DIR = DATA_PROCESSED_DIR / 'primary' / 'val'
+PRIMARY_TEST_DIR = DATA_PROCESSED_DIR / 'primary' / 'test'
+
+BASELINE_TRAIN_DIR = DATA_PROCESSED_DIR / 'baseline' / 'train'
+BASELINE_VAL_DIR = DATA_PROCESSED_DIR / 'baseline' / 'val'
+BASELINE_TEST_DIR = DATA_PROCESSED_DIR / 'baseline' / 'test'
 
 # Audio processing parameters
 TARGET_SR = 16000 # Hz
