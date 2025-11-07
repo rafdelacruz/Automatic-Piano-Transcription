@@ -19,6 +19,17 @@ class PianoTranscriptionDataset(Dataset):
             self.log_mel_segments = self.log_mel_segments[:max_samples, :, :]
             self.piano_roll_segments = self.piano_roll_segments[:max_samples, :]
 
+        # Compute positive weight if class is a training dataset
+        self.pos_weight = -1
+
+        if split == 'train':
+            num_pos = self.piano_roll_segments.sum(axis=0)
+            num_neg = self.piano_roll_segments.shape[0] - num_pos
+
+            self.pos_weight = num_neg / (num_pos + 1e-6)
+            self.pos_weight = np.clip(self.pos_weight, 1, 20)
+            self.pos_weight = torch.tensor(self.pos_weight, dtype=torch.float32)
+
         # Convert to float tensors
         self.log_mel_segments = torch.tensor(self.log_mel_segments, dtype=torch.float32).unsqueeze(1)
         self.piano_roll_segments = torch.tensor(self.piano_roll_segments, dtype=torch.float32)
