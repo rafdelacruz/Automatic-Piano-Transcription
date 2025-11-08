@@ -14,6 +14,10 @@ class PianoTranscriptionDataset(Dataset):
         # Tranpose [n_segments, n_mels, n_frames] -> [n_segments, n_frames, n_mels]
         self.log_mel_segments = self.log_mel_segments.transpose(0, 2, 1)
 
+        # Transpose [n_segments, 88, n_frames] -> [n_segments, n_frames, 88]
+        if self.piano_roll_segments.ndim == 3:
+            self.piano_roll_segments = self.piano_roll_segments.transpose((0, 2, 1))
+
         # Trim samples, if specified
         if max_samples:
             self.log_mel_segments = self.log_mel_segments[:max_samples, :, :]
