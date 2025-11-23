@@ -26,7 +26,7 @@ def process_pair(
     wav_path : pathlib.Path
         A Path object pointing to the audio file.
     midi_path : pathlib.Path
-        A path object pointing to the MIDI file.
+        A Path object pointing to the MIDI file.
     target_sr : float
         The target sampling rate to resample the audio to (in Hz).
     n_mels : int
@@ -150,6 +150,52 @@ def process_dataset(dataset: str, split_file: str, primary: bool = True) -> None
     np.save(val_dir / 'val_piano_roll_segments.npy', np.stack(val_segments[1]))
     np.save(test_dir / 'test_log_mel_segments.npy', np.stack(test_segments[0]))
     np.save(test_dir / 'test_piano_roll_segments.npy', np.stack(test_segments[1]))
+
+    print('Segments saved!')
+
+def process_and_save_sample(
+    wav_path: pathlib.Path, midi_path: pathlib.Path, primary: bool = False
+) -> None:
+    """
+    Process an audio sample and its corresponding MIDI data, and save it to the
+    sample directory.
+
+    This function sends the audio and MIDI files through the data processing
+    pipeline to generate spectrogram and piano roll features and is then
+    segmented into smaller chunks.
+
+    Parameters
+    ----------
+    wav_sample_path : pathlib.Path
+        A Path object pointing to the audio file to process.
+    midi_sample_path : pathlib.Path
+        A Path object pointing to the MIDI file to process.
+    
+    """
+    # Generate log_mel spectrogram and piano roll
+    log_mel, piano_roll = process_pair(
+        wav_path, midi_path,
+        config.TARGET_SR,   
+        config.N_MELS,
+        config.HOP_LENGTH
+    )
+
+    # Segment spectrogram and piano roll
+    if primary:
+        log_mel_segments, piano_roll_segments = segment_pair_primary(
+            log_mel, piano_roll,
+            config.TARGET_SR,
+            hop_length=config.HOP_LENGTH,
+            segment_duration=config.SEGMENT_DURATION
+        )
+    else:
+        log_mel_segments, piano_roll_segments = segment_pair_baseline(
+            log_mel, piano_roll
+        )
+
+    # Save the data pairs to their respective folder
+    np.save(config. DATA_SAMPLE_DIR / 'log_mel_segments.npy', log_mel_segments)
+    np.save(config. DATA_SAMPLE_DIR / 'piano_roll_segments.npy', piano_roll_segments)
 
     print('Segments saved!')
 
