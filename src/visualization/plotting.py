@@ -62,7 +62,7 @@ def plot_piano_roll(piano_roll: np.ndarray) -> None:
         plt.bar(np.arange(88), piano_roll, color='purple')
         plt.title('Piano Roll')
         plt.yticks([0, 1])
-        plt.xlabel('Piano Number Number')
+        plt.xlabel('Piano Key Number')
         plt.ylabel('Activation')
     else: # Multiple frames
         plt.imshow(piano_roll, aspect='auto', origin='lower')
@@ -108,7 +108,7 @@ def plot_log_mel_and_piano_roll(
         plt.bar(np.arange(88), piano_roll, color='purple')
         plt.title('Piano Roll')
         plt.yticks([0, 1])
-        plt.xlabel('Piano Number Number')
+        plt.xlabel('Piano Key Number')
         plt.ylabel('Activation')
     else: # Multiple frames
         plt.imshow(piano_roll, aspect='auto', origin='lower')
@@ -138,14 +138,14 @@ def plot_predictions_vs_ground_truth(
         plt.bar(np.arange(88), pred_notes, color='purple')
         plt.title('Predicted Piano Roll')
         plt.yticks([0, 1])
-        plt.xlabel('Piano Number Number')
+        plt.xlabel('Piano Key Number')
         plt.ylabel('Activation')
 
         plt.subplot(1, 2, 2)
         plt.bar(np.arange(88), gt_notes, color='purple')
         plt.title('Ground Truth Piano Roll')
         plt.yticks([0, 1])
-        plt.xlabel('Piano Number Number')
+        plt.xlabel('Piano Key Number')
         plt.ylabel('Activation')
     else: # Multiple frames
         plt.subplot(1, 2, 1)
