@@ -13,7 +13,9 @@ class PianoTranscriptionDataset(Dataset):
     data_dir : pathlib.Path
         A Path object pointing to the data directory to be loaded.
     split : {'train', 'val', 'test'}
-        A string representing which dataset split to load
+        A string representing which dataset split to load.
+    normalize : bool, default=True
+        Indicates whether to standard normalize the log-Mel spectrograms.
     augment : bool, default=False
         Indicates whether or to apply data augentations.
     max_samples : int, default=None
@@ -37,6 +39,7 @@ class PianoTranscriptionDataset(Dataset):
         self,
         data_dir: pathlib.Path,
         split: str,
+        normalize: bool = True,
         augment: bool = False,
         max_samples: int = None
     ) -> None:
@@ -46,6 +49,13 @@ class PianoTranscriptionDataset(Dataset):
         # Load precomputed data
         self.log_mel_segments = np.load(data_dir / log_mel_file_name)
         self.piano_roll_segments = np.load(data_dir / piano_roll_file_name)
+
+        # Standard normalize log-Mel spectograms
+        if normalize:
+            mean = np.mean(self.log_mel_segments)
+            std = np.std(self.log_mel_segments)
+
+            self.log_mel_segments = (self.log_mel_segments - mean) / (std + 1e-6)
 
         # Tranpose [n_segments, n_mels, n_frames] -> [n_segments, n_frames, n_mels]
         self.log_mel_segments = self.log_mel_segments.transpose(0, 2, 1)
