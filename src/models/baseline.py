@@ -54,7 +54,7 @@ class AllConv(nn.Module):
         x = self.bn5(x)
         x = self.drop3(x)
 
-        x = F.relu(self.conv7(x))
+        x = self.conv7(x)
         x = self.bn6(x)
         x = self.avg_pool(x)
 
