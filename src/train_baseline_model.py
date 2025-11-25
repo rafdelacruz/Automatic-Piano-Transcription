@@ -18,6 +18,7 @@ def train(model, train_data, val_data=None, batch_size=16, num_epochs=10, save_p
     torch.manual_seed(42)
     train_losses = np.zeros(num_epochs)
     val_losses = np.zeros(num_epochs)
+    f1_scores = np.zeros(num_epochs)
 
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
     model.to(device)
@@ -52,7 +53,11 @@ def train(model, train_data, val_data=None, batch_size=16, num_epochs=10, save_p
 
         # ---------- Validation ----------
         model.eval()
+
         val_loss = 0.0
+        all_tp = 0
+        all_fp = 0
+        all_fn = 0
 
         with torch.no_grad():
             for log_mel, frame_target in val_loader:
@@ -64,10 +69,22 @@ def train(model, train_data, val_data=None, batch_size=16, num_epochs=10, save_p
 
                 val_loss += loss.item()
 
+                prediction = torch.sigmoid(outputs)
+                prediction = (outputs >= 0.5).float()
+                all_tp += ((prediction == 1) & (frame_target == 1)).sum().item()
+                all_fp += ((prediction == 1) & (frame_target == 0)).sum().item()
+                all_fn += ((prediction == 0) & (frame_target == 1)).sum().item()
+
         avg_train_loss = train_loss / len(train_loader)
         avg_val_loss = val_loss / len(val_loader)
+
+        precision = all_tp / (all_tp + all_fp + 1e-10)
+        recall = all_tp / (all_tp + all_fn + 1e-10)
+        f1 = 2 * (precision * recall) / (precision + recall + 1e-10)
+
         train_losses[epoch] = avg_train_loss
         val_losses[epoch] = avg_val_loss
+        f1_scores[epoch] = f1
 
         scheduler.step()
 
@@ -75,11 +92,12 @@ def train(model, train_data, val_data=None, batch_size=16, num_epochs=10, save_p
         if save_checkpoint and save_path:
             torch.save(model.state_dict(), 'state.pth') # TODO: Create function to obtain model name (use for checkpoint file name)
 
-        print(f'Epoch {epoch + 1}/{num_epochs} | Train Loss: {avg_train_loss:.4f} | Validation Loss: {avg_val_loss:.4f}')
+        print(f'Epoch {epoch + 1}/{num_epochs} | Train Loss: {avg_train_loss:.4f} | Validation Loss: {avg_val_loss:.4f} | Validation F1: {f1:.4f}')
 
     if save_path:
         np.savetxt(save_path / 'train_loss.csv', train_losses)
         np.savetxt(save_path / 'val_loss.csv', val_losses)
+        np.savetxt(save_path / 'f1_scores.csv', f1_scores)
 
 if __name__ == '__main__':
     model = AllConv()
