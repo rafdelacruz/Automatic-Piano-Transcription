@@ -26,7 +26,7 @@ def train(model, train_data, val_data=None, batch_size=16, num_epochs=10, save_p
     train_loader = DataLoader(train_data, batch_size=batch_size, shuffle=True)
     val_loader = DataLoader(val_data, batch_size=batch_size)
 
-    criterion = nn.BCEWithLogitsLoss()
+    criterion = nn.BCEWithLogitsLoss(pos_weight=train_data.pos_weight)
     optimizer = optim.SGD(model.parameters(), lr=0.5, momentum=0.9)
 
     # Halve learning rate every 10 epochs
