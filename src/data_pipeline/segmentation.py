@@ -121,7 +121,7 @@ def segment_pair_baseline(
     half = context_size // 2
 
     if zero_pad:
-        log_mel = np.pad(log_mel, ((0, 0), (half, half)))
+        log_mel = np.pad(log_mel, ((0, 0), (half, half)), constant_values=-80.0)
         piano_roll = np.pad(piano_roll, ((0, 0), (half, half)))
 
     # Iterate over centres of each segment
