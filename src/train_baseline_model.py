@@ -43,9 +43,9 @@ def train(model, train_data, val_data=None, batch_size=16, num_epochs=10, save_p
             frame_target = frame_target.to(device)
 
             optimizer.zero_grad()
-            outputs = model(log_mel) # Output: (batch_size, 88)
+            logits = model(log_mel) # Output: (batch_size, 88)
 
-            loss = criterion(outputs, frame_target)
+            loss = criterion(logits, frame_target)
             loss.backward()
             optimizer.step()
 
@@ -64,13 +64,13 @@ def train(model, train_data, val_data=None, batch_size=16, num_epochs=10, save_p
                 log_mel = log_mel.to(device)
                 frame_target = frame_target.to(device)
 
-                outputs = model(log_mel) # Output: (batch_size, 88)
-                loss = criterion(outputs, frame_target)
+                logits = model(log_mel) # Output: (batch_size, 88)
+                loss = criterion(logits, frame_target)
 
                 val_loss += loss.item()
 
-                prediction = torch.sigmoid(outputs)
-                prediction = (outputs >= 0.5).float()
+                prediction = torch.sigmoid(logits)
+                prediction = (logits >= 0.5).float()
                 all_tp += ((prediction == 1) & (frame_target == 1)).sum().item()
                 all_fp += ((prediction == 1) & (frame_target == 0)).sum().item()
                 all_fn += ((prediction == 0) & (frame_target == 1)).sum().item()
