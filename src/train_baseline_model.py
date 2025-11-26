@@ -70,7 +70,7 @@ def train(model, train_data, val_data=None, batch_size=16, num_epochs=10, save_p
                 val_loss += loss.item()
 
                 prediction = torch.sigmoid(logits)
-                prediction = (logits >= 0.5).float()
+                prediction = (prediction >= 0.5).float()
                 all_tp += ((prediction == 1) & (frame_target == 1)).sum().item()
                 all_fp += ((prediction == 1) & (frame_target == 0)).sum().item()
                 all_fn += ((prediction == 0) & (frame_target == 1)).sum().item()
@@ -90,7 +90,7 @@ def train(model, train_data, val_data=None, batch_size=16, num_epochs=10, save_p
 
         # Save checkpoints
         if save_checkpoint and save_path:
-            torch.save(model.state_dict(), 'state.pth') # TODO: Create function to obtain model name (use for checkpoint file name)
+            torch.save(model.state_dict(), save_path / 'checkpoints' / f'epoch_{epoch}.pth')
 
         print(f'Epoch {epoch + 1}/{num_epochs} | Train Loss: {avg_train_loss:.4f} | Validation Loss: {avg_val_loss:.4f} | Validation F1: {f1:.4f}')
 
@@ -101,8 +101,14 @@ def train(model, train_data, val_data=None, batch_size=16, num_epochs=10, save_p
 
 if __name__ == '__main__':
     model = AllConv()
+
+    # Setup experiment directory
+    experiment_name = 'baseline_overfit_scale'
+    experiment_dir = config.EXPERIMENTS_DIR / experiment_name
+    experiment_checkpoints_dir = experiment_dir / 'checkpoints'
+    experiment_checkpoints_dir.mkdir(parents=True, exist_ok=True)
     
     train_dataset = PianoTranscriptionDataset(config.BASELINE_TRAIN_DIR, 'train')
     val_dataset = PianoTranscriptionDataset(config.BASELINE_VAL_DIR, 'val')
 
-    train(model, train_dataset, val_data=train_dataset, num_epochs=20, save_path=pathlib.Path('.'), save_checkpoint=True)
+    train(model, train_dataset, val_data=val_dataset, num_epochs=30, save_path=experiment_dir, save_checkpoint=True)
