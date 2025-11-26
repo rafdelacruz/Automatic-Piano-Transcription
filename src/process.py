@@ -140,7 +140,7 @@ def process_dataset(dataset: str, split_file: str, primary: bool = True) -> None
             test_segments[0].extend(log_mel_segments)
             test_segments[1].extend(piano_roll_segments)
 
-        if i % 10 == 0:
+        if (i + 1) % 10 == 0:
             print(f'{i + 1}/{len(metadata_df)} samples processed!')
 
     # Save the data pairs to their respective folder
