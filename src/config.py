@@ -19,6 +19,9 @@ BASELINE_TRAIN_DIR = DATA_PROCESSED_DIR / 'baseline' / 'train'
 BASELINE_VAL_DIR = DATA_PROCESSED_DIR / 'baseline' / 'val'
 BASELINE_TEST_DIR = DATA_PROCESSED_DIR / 'baseline' / 'test'
 
+EXPERIMENTS_DIR = BASE_DIR / 'experiments'
+RESULTS_DIR = BASE_DIR / 'result'
+
 # Audio processing parameters
 TARGET_SR = 16000 # Hz
 HOP_LENGTH = 512
