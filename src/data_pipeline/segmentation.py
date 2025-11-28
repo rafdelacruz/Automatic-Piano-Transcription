@@ -69,7 +69,7 @@ def segment_pair_primary(
         piano_roll_tail = piano_roll[:, start:end]
 
         pad_width = segment_frames - log_mel_tail.shape[1]
-        log_mel_tail = np.pad(log_mel_tail, ((0, 0), (0, pad_width)))
+        log_mel_tail = np.pad(log_mel_tail, ((0, 0), (0, pad_width)), constant_values=-80.0)
         piano_roll_tail = np.pad(piano_roll_tail, ((0, 0), (0, pad_width)))
 
         log_mel_segments.append(log_mel_tail)
