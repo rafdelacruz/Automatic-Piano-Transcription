@@ -10,8 +10,10 @@ class PianoTranscriptionDataset(Dataset):
 
     Parameters
     ----------
-    data_dir : pathlib.Path
-        A Path object pointing to the data directory to be loaded.
+    log_mel_segments_file : pathlib.Path
+        A Path object pointing to the file that holds the log-Mel segments.
+    piano_roll_segments_file : pathlib.Path
+        A Path object pointing to the file that holds the piano roll segments.
     split : {'train', 'val', 'test'}
         A string representing which dataset split to load.
     normalize : bool, default=True
@@ -37,18 +39,16 @@ class PianoTranscriptionDataset(Dataset):
     """
     def __init__(
         self,
-        data_dir: pathlib.Path,
+        log_mel_segments_file: pathlib.Path,
+        piano_roll_segments_file: pathlib.Path,
         split: str,
         normalize: bool = True,
         augment: bool = False,
         max_samples: int = None
     ) -> None:
-        log_mel_file_name = split + '_log_mel_segments.npy'
-        piano_roll_file_name = split + '_piano_roll_segments.npy'
-
         # Load precomputed data
-        self.log_mel_segments = np.load(data_dir / log_mel_file_name)
-        self.piano_roll_segments = np.load(data_dir / piano_roll_file_name)
+        self.log_mel_segments = np.load(log_mel_segments_file)
+        self.piano_roll_segments = np.load(piano_roll_segments_file)
 
         # Standard normalize log-Mel spectograms
         if normalize:
