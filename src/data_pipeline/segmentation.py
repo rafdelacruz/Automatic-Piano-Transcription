@@ -6,7 +6,7 @@ def segment_pair_primary(
     sr: float,
     hop_length: int = 512,
     segment_duration: float = 5.0,
-    drop_last: bool = True
+    drop_last: bool = False
 ) -> tuple[np.ndarray, np.ndarray]:
     """
     Segment a log-Mel spectrogram and piano roll pair into equal time chunks.
@@ -28,7 +28,7 @@ def segment_pair_primary(
         The number of samples between successive frames.
     segment_duration : float, default=5.0
         The duration of each segment in seconds.
-    drop_last : bool, default=True
+    drop_last : bool, default=False
         Indicates whether or not to discard leftover frames that do not fit a
         full segment.
 
