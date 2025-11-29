@@ -132,4 +132,4 @@ def segment_pair_baseline(
         log_mel_segments.append(log_mel[:, start:end])
         piano_roll_segments.append(piano_roll[:, centre])
 
-    return np.stack(log_mel_segments), np.stack(piano_roll_segments)
+    return np.stack(log_mel_segments), np.stack(piano_roll_segments)[..., np.newaxis]

@@ -60,6 +60,6 @@ class AllConv(nn.Module):
 
         # Model output: (batch, 88, 5, 1)
         x = x[:, :, 2, :] # Take centre frame (keep middle slice)
-        x = x.squeeze(-1)
+        x = x.permute(0, 2, 1)
 
         return x
