@@ -73,8 +73,8 @@ class PianoTranscriptionDataset(Dataset):
         self.pos_weight = -1
 
         if split == 'train':
-            num_pos = self.piano_roll_segments.sum(axis=0)
-            num_neg = self.piano_roll_segments.shape[0] - num_pos
+            num_pos = self.piano_roll_segments.sum(axis=(0, 1))
+            num_neg = self.piano_roll_segments.shape[0] * self.piano_roll_segments.shape[1] - num_pos
 
             self.pos_weight = num_neg / (num_pos + 1e-6)
             self.pos_weight = np.clip(self.pos_weight, 1, 20)
