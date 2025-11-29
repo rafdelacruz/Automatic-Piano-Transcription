@@ -65,8 +65,14 @@ class PianoTranscriptionDataset(Dataset):
 
         # Trim samples, if specified
         if max_samples:
+            np.random.seed(42)
+
+            perm = np.random.permutation(len(self.log_mel_segments))
+            self.log_mel_segments = self.log_mel_segments[perm]
+            self.piano_roll_segments = self.piano_roll_segments[perm]
+
             self.log_mel_segments = self.log_mel_segments[:max_samples, :, :]
-            self.piano_roll_segments = self.piano_roll_segments[:max_samples, :]
+            self.piano_roll_segments = self.piano_roll_segments[:max_samples, :, :]
 
         # Compute positive weight if class is a training dataset
         self.pos_weight = -1
