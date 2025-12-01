@@ -77,3 +77,16 @@ def get_f1(predicted_notes: torch.Tensor, true_notes: torch.Tensor) -> float:
     rec = get_recall(predicted_notes, true_notes)
 
     return 0.0 if prec + rec == 0 else 2 * (prec * rec) / (prec + rec)
+
+def get_precision_from_counts(true_positives: int, false_positives: int) -> float:
+    return 0.0 if true_positives + false_positives == 0 else true_positives / (true_positives + false_positives)
+
+def get_recall_from_counts(true_positives: int, false_negatives: int) -> float:
+    return 0.0 if true_positives + false_negatives == 0 else true_positives / (true_positives + false_negatives)
+
+def get_f1_from_counts(
+    true_positives: int, false_positives: int, false_negatives: int
+) -> float:
+    prec = get_precision_from_counts(true_positives, false_positives)
+    rec = get_recall_from_counts(true_positives, false_negatives)
+    return 0.0 if prec + rec == 0 else 2 * (prec * rec) / (prec + rec)
