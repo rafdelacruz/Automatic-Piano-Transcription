@@ -162,9 +162,12 @@ def plot_predictions_vs_ground_truth(
 
     plt.show()
 
-def plot_training_curves(train_loss: np.ndarray, val_loss: np.ndarray) -> None:
+def plot_training_curves(
+    train_loss: np.ndarray, val_loss: np.ndarray,
+    train_f1_scores: np.ndarray, val_f1_scores: np.ndarray
+) -> None:
     """
-    Plot training and validation loss curves over epochs.
+    Plot training and validation loss and F1 curves over epochs.
 
     Parameters
     ----------
@@ -172,13 +175,27 @@ def plot_training_curves(train_loss: np.ndarray, val_loss: np.ndarray) -> None:
         A 1D NumPy array of training loss values per epoch.
     val_loss : np.ndarray
         A 1D NumPy array of validation loss values per epoch.
+    train_f1_scores : np.ndarray
+        A 1D NumPy array of training F1 scores per epoch.
+    val_f1_scores : np.ndarray
+        A 1D NumPy array of validation F1 scores per epoch
     """
+    plt.subplot(1, 2, 1)
     plt.plot(np.arange(len(train_loss)) + 1, train_loss, label='Train')
     plt.plot(np.arange(len(val_loss)) + 1, val_loss, label='Validation')
 
     plt.title('Train vs. Validation Loss')
     plt.xlabel('Epoch')
     plt.ylabel('Loss')
+    plt.legend(loc='best')
+
+    plt.subplot(1, 2, 2)
+    plt.plot(np.arange(len(train_f1_scores)) + 1, train_f1_scores, label='Train')
+    plt.plot(np.arange(len(val_f1_scores)) + 1, val_f1_scores, label='Validation')
+
+    plt.title('Train vs. Validation F1 Score')
+    plt.xlabel('Epoch')
+    plt.ylabel('F1 Score')
     plt.legend(loc='best')
 
     plt.show()
