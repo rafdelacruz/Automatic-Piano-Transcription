@@ -12,6 +12,32 @@ from models.baseline import AllConv
 from models.primary import PianoTranscriptionModel
 from metrics import classification_metrics, confusion_matrix_metrics
 
+def get_training_config_str(
+    model: nn.Module,
+    criterion: nn.Module,
+    optimizer: optim.Optimizer,
+    scheduler: optim.lr_scheduler.LRScheduler | None,
+    num_epochs: int,
+    train_loader: DataLoader,
+    val_loader: DataLoader
+) -> str:
+    config_str = []
+
+    config_str.append('===== Training Configurations =====')
+    config_str.append(f'Model: {model.__class__.__name__}')
+    config_str.append(f'Loss Function: {criterion.__class__.__name__}')
+    config_str.append(f'Optimizer: {optimizer.__class__.__name__}')
+    config_str.append(f'Optimizer Parameters: {optimizer.defaults}')
+    config_str.append(f'Scheduler: {scheduler.__class__.__name__ if scheduler else None}')
+    config_str.append(f'Number of Epochs: {num_epochs}')
+    config_str.append(f'Learning Rate: {optimizer.param_groups[0]['initial_lr']}')
+    config_str.append(f'Batch Size: {train_loader.batch_size}')
+    config_str.append(f'Train Dataset Size: {len(train_loader.dataset)}')
+    config_str.append(f'Validation Dataset Size: {len(val_loader.dataset)}')
+    config_str.append('===================================')
+
+    return '\n'.join(config_str)
+
 def train(
     model: nn.Module,
     train_loader: DataLoader, val_loader: DataLoader,
@@ -120,6 +146,19 @@ def train(
         np.savetxt(save_path / 'val_loss.csv', val_losses)
         np.savetxt(save_path / 'train_f1_scores.csv', train_f1_scores)
         np.savetxt(save_path / 'val_f1_scores.csv', val_f1_scores)
+
+        training_config = get_training_config_str(
+            model=model,
+            criterion=criterion,
+            optimizer=optimizer,
+            scheduler=scheduler,
+            num_epochs=num_epochs,
+            train_loader=train_loader,
+            val_loader=val_loader
+        )
+
+        with open(save_path / 'training_config.txt', 'w') as f:
+            f.write(training_config)
 
 def train_baseline_model(
     experiment_name: str,
