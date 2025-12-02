@@ -12,6 +12,56 @@ from models.baseline import AllConv
 from models.primary import PianoTranscriptionModel
 from metrics import classification_metrics, confusion_matrix_metrics
 
+def grid_search_threshold(
+    experiment_name: str,
+    num_epochs: int,
+    data_loader: DataLoader,
+    min_threshold: float,
+    max_threshold: float,
+    step: float,
+    primary: bool = False,
+    print_progress: bool = True
+) -> tuple[int, float, float]:
+    num_points = int(round((max_threshold - min_threshold) / step)) + 1
+    thresholds = np.linspace(min_threshold, max_threshold, num_points)
+    checkpoint_dir = config.EXPERIMENTS_DIR / experiment_name / 'checkpoints'
+
+    best_checkpoint = 0
+    best_threshold = 0.0
+    best_f1 = 0.0
+
+    model = PianoTranscriptionModel() if primary else AllConv()
+
+    for epoch in range(num_epochs):
+        print(f'SEARCHING CHECKPOINT {epoch + 1}')
+        state = torch.load(checkpoint_dir / f'epoch_{epoch + 1}.pth')
+        model.load_state_dict(state)
+        model.eval()
+        
+        for threshold in thresholds:
+            tp, fp, fn = 0, 0, 0
+
+            with torch.no_grad():
+                for log_mel, frame_target in data_loader:
+                    logits = model(log_mel)
+                    prediction = (torch.sigmoid(logits) >= threshold).float()
+
+                    tp += confusion_matrix_metrics.count_true_positives(prediction, frame_target)
+                    fp += confusion_matrix_metrics.count_false_positives(prediction, frame_target)
+                    fn += confusion_matrix_metrics.count_false_negatives(prediction, frame_target)
+
+            f1 = classification_metrics.get_f1_from_counts(tp, fp, fn)
+            print(f'Threshold {threshold:.2f}: {(f1 * 100):.2f}%')
+
+            if f1 > best_f1:
+                best_f1 = f1
+                best_threshold = threshold
+                best_checkpoint = epoch + 1
+        
+        print()
+
+    return best_checkpoint, best_threshold, best_f1
+
 def get_training_config_str(
     model: nn.Module,
     criterion: nn.Module,
