@@ -125,3 +125,17 @@ def convert_piano_roll_to_midi(
     pm.instruments.append(instrument)
     
     return pm
+
+def convert_pm_to_mir_eval_format(pm: pretty_midi.PrettyMIDI) -> tuple[np.ndarray, np.ndarray]:
+    intervals = []
+    pitches = []
+
+    for instrument in pm.instruments:
+        for note in instrument.notes:
+            intervals.append([note.start, note.end])
+            pitches.append(note.pitch)
+
+    intervals = np.array(intervals)
+    pitches = np.array(pitches)
+
+    return intervals, pitches
