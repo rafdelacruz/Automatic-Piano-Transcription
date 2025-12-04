@@ -80,7 +80,7 @@ def get_training_config_str(
     config_str.append(f'Optimizer Parameters: {optimizer.defaults}')
     config_str.append(f'Scheduler: {scheduler.__class__.__name__ if scheduler else None}')
     config_str.append(f'Number of Epochs: {num_epochs}')
-    config_str.append(f'Learning Rate: {optimizer.param_groups[0]['initial_lr']}')
+    config_str.append(f'Learning Rate: {optimizer.param_groups[0]['lr'] if scheduler is None else optimizer.param_groups[0]['initial_lr']}')
     config_str.append(f'Batch Size: {train_loader.batch_size}')
     config_str.append(f'Train Dataset Size: {len(train_loader.dataset)}')
     config_str.append(f'Validation Dataset Size: {len(val_loader.dataset)}')
