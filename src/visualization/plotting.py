@@ -65,7 +65,7 @@ def plot_piano_roll(piano_roll: np.ndarray) -> None:
         plt.xlabel('Piano Key Number')
         plt.ylabel('Activation')
     else: # Multiple frames
-        plt.imshow(piano_roll, aspect='auto', origin='lower')
+        plt.imshow(piano_roll, aspect='auto', origin='lower', cmap='magma_r')
         plt.title('Piano Roll')
         plt.xlabel('Time Frame')
         plt.ylabel('Piano Key Number')
@@ -111,7 +111,7 @@ def plot_log_mel_and_piano_roll(
         plt.xlabel('Piano Key Number')
         plt.ylabel('Activation')
     else: # Multiple frames
-        plt.imshow(piano_roll, aspect='auto', origin='lower')
+        plt.imshow(piano_roll, aspect='auto', origin='lower', cmap='magma_r')
         plt.title('Piano Roll')
         plt.xlabel('Time Frame')
         plt.ylabel('Piano Key Number')
@@ -149,13 +149,13 @@ def plot_predictions_vs_ground_truth(
         plt.ylabel('Activation')
     else: # Multiple frames
         plt.subplot(1, 2, 1)
-        plt.imshow(pred_notes, aspect='auto', origin='lower')
+        plt.imshow(pred_notes, aspect='auto', origin='lower', cmap='magma_r')
         plt.title('Predicted Piano Roll')
         plt.xlabel('Time Frame')
         plt.ylabel('Piano Key Number')
 
         plt.subplot(1, 2, 2)
-        plt.imshow(gt_notes, aspect='auto', origin='lower')
+        plt.imshow(gt_notes, aspect='auto', origin='lower', cmap='magma_r')
         plt.title('Ground Truth Piano Roll')
         plt.xlabel('Time Frame')
         plt.ylabel('Piano Key Number')
