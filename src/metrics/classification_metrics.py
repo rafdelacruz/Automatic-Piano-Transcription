@@ -1,3 +1,5 @@
+import mir_eval
+import numpy as np
 import torch
 
 def get_precision(predicted_notes: torch.Tensor, true_notes: torch.Tensor) -> float:
@@ -90,3 +92,31 @@ def get_f1_from_counts(
     prec = get_precision_from_counts(true_positives, false_positives)
     rec = get_recall_from_counts(true_positives, false_negatives)
     return 0.0 if prec + rec == 0 else 2 * (prec * rec) / (prec + rec)
+
+# Use midi_utils.convert_pm_to_mir_eval_format to obtain intervals + pitches
+def get_onset_metrics(
+    ref_intervals: np.ndarray, ref_pitches: np.ndarray,
+    est_intervals: np.ndarray, est_pitches: np.ndarray,
+    tolerance: float = 0.05
+) -> tuple[float, float, float]:
+    # Extract onset times and sort them
+    ref_onsets = np.sort(ref_intervals[:, 0]) if ref_intervals.size > 0 else np.array([])
+    est_onsets = np.sort(est_intervals[:, 0]) if est_intervals.size > 0 else np.array([])
+
+    # Compute onset metrics
+    precision, recall, f1 = mir_eval.onset.f_measure(ref_onsets, est_onsets, window=tolerance)
+
+    return precision, recall, f1
+
+def get_onset_and_offset_metrics(
+    ref_intervals: np.ndarray, ref_pitches: np.ndarray,
+    est_intervals: np.ndarray, est_pitches: np.ndarray,
+    tolerance: float = 0.05    
+) -> tuple[float, float, float]:
+    precision, recall, f1, _ = mir_eval.transcription.precision_recall_f1_overlap(
+        ref_intervals, ref_pitches,
+        est_intervals, est_pitches,
+        onset_tolerance=tolerance,
+    )
+
+    return precision, recall, f1
